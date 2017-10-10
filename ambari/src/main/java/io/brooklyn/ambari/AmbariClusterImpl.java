@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
 import org.apache.brooklyn.api.effector.Effector;
-import org.apache.brooklyn.api.entity.EntityLocal;
 import org.apache.brooklyn.api.entity.EntitySpec;
 import org.apache.brooklyn.api.location.Location;
 import org.apache.brooklyn.api.mgmt.Task;
@@ -134,7 +133,7 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
         }
 
 
-        addEnricher(Enrichers.builder()
+        enrichers().add(Enrichers.builder()
                 .propagating(Attributes.MAIN_URI)
                 .from(getMasterAmbariServer())
                 .build());
@@ -154,7 +153,7 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
             }
         });
 
-        for (ExtraService extraService : Entities.descendants(this, ExtraService.class)) {
+        for (ExtraService extraService : Entities.descendantsAndSelf(this, ExtraService.class)) {
             if (extraService.getConfig(ExtraService.SERVICE_NAME) == null && extraService.getConfig(ExtraService.COMPONENT_NAMES) == null) {
                 continue;
             }
@@ -202,30 +201,30 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
     @Override
     public void start(Collection<? extends Location> locations) {
         super.start(locations);
-        subscribe(getMasterAmbariServer(), AmbariServer.REGISTERED_HOSTS, new RegisteredHostEventListener(this, config().get(AmbariCluster.PAUSE_FOR_DEPLOYMENT)));
-        subscribe(getMasterAmbariServer(), AmbariServer.CLUSTER_STATE, new ClusterStateEventListener(this));
+        subscriptions().subscribe(getMasterAmbariServer(), AmbariServer.REGISTERED_HOSTS, new RegisteredHostEventListener(this, config().get(AmbariCluster.PAUSE_FOR_DEPLOYMENT)));
+        subscriptions().subscribe(getMasterAmbariServer(), AmbariServer.CLUSTER_STATE, new ClusterStateEventListener(this));
 
         EtcHostsManager.setHostsOnMachines(getAmbariNodes(), getConfig(ETC_HOST_ADDRESS));
     }
 
     @Override
     public Iterable<AmbariNode> getAmbariNodes() {
-        return Entities.descendants(this, AmbariNode.class);
+        return Entities.descendantsAndSelf(this, AmbariNode.class);
     }
 
     @Override
     public Iterable<AmbariAgent> getAmbariAgents() {
-        return Entities.descendants(this, AmbariAgent.class);
+        return Entities.descendantsAndSelf(this, AmbariAgent.class);
     }
 
     @Override
     public Iterable<AmbariServer> getAmbariServers() {
-        return Entities.descendants(this, AmbariServer.class);
+        return Entities.descendantsAndSelf(this, AmbariServer.class);
     }
 
     @Override
     public AmbariServer getMasterAmbariServer() {
-        return Iterables.getFirst(Entities.descendants(this, AmbariServer.class), null);
+        return Iterables.getFirst(Entities.descendantsAndSelf(this, AmbariServer.class), null);
     }
 
     @Override
@@ -325,7 +324,7 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
     @Override
     public void deployCluster() throws AmbariApiException, ExtraServiceException {
         // Set the flag to true so the deployment won't happen multiple times
-        setAttribute(CLUSTER_SERVICES_INITIALISE_CALLED, true);
+        sensors().set(CLUSTER_SERVICES_INITIALISE_CALLED, true);
 
         // Wait for the Ambari server to be up
         getMasterAmbariServer().waitForServiceUp();
@@ -409,7 +408,7 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
         } catch (AmbariApiException ex) {
             // If the cluster failed to deploy, we first put the server "ON FIRE" and throw again the exception for the
             // cluster to handle it properly.
-            ServiceStateLogic.ServiceNotUpLogic.updateNotUpIndicator((EntityLocal) getMasterAmbariServer(), "ambari.api", ex.getMessage());
+            ServiceStateLogic.ServiceNotUpLogic.updateNotUpIndicator(getMasterAmbariServer(), "ambari.api", ex.getMessage());
             throw ex;
         }
     }
@@ -417,7 +416,7 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
     @Override
     public void postDeployCluster() throws ExtraServiceException {
         // Set the flag to true so the post deployment won't happen multiple times
-        setAttribute(CLUSTER_SERVICES_INSTALLED, true);
+        sensors().set(CLUSTER_SERVICES_INSTALLED, true);
 
         LOG.info("{} calling post-cluster-deploy on all Ambari nodes", this);
         try {
@@ -541,7 +540,7 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
         List<Task<?>> tasks = Lists.newArrayList();
         for (final ExtraService extraService : getExtraServices()) {
             Task<?> t = Tasks.builder()
-                    .name(extraService.getEntityType().getSimpleName())
+                    .displayName(extraService.getEntityType().getSimpleName())
                     .description("pre-cluster-deploy tasks for " + extraService.getEntityType().getName() + " extra service")
                     .body(new FunctionRunningCallable<ExtraService>(extraService, fn))
                     .tag(BrooklynTaskTags.NON_TRANSIENT_TASK_TAG)
@@ -558,14 +557,14 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
 
     @Nonnull
     private Iterable<ExtraService> getExtraServices() {
-        return Entities.descendants(this, ExtraService.class);
+        return Entities.descendantsAndSelf(this, ExtraService.class);
     }
 
     @Nullable
     private AmbariAgent getAmbariAgentByFqdn(@Nonnull String fqdn) {
         checkNotNull(fqdn);
 
-        for (AmbariAgent ambariAgent : Entities.descendants(this, AmbariAgent.class)) {
+        for (AmbariAgent ambariAgent : Entities.descendantsAndSelf(this, AmbariAgent.class)) {
             if (StringUtils.equals(ambariAgent.getFqdn(), fqdn)) {
                 return ambariAgent;
             }
@@ -588,11 +587,11 @@ public class AmbariClusterImpl extends BasicStartableImpl implements AmbariClust
             agentsToExpect += Iterables.size(getAmbariServers());
         }
 
-        setAttribute(EXPECTED_AGENTS, agentsToExpect);
+        sensors().set(EXPECTED_AGENTS, agentsToExpect);
     }
 
     private Iterable<AmbariHostGroup> getHostGroups() {
-        return Entities.descendants(this, AmbariHostGroup.class);
+        return Entities.descendantsAndSelf(this, AmbariHostGroup.class);
     }
 
     private void createClusterTopology() {

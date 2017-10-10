@@ -82,7 +82,7 @@ public class AmbariAgentSshDriver extends JavaSoftwareProcessSshDriver implement
 
         Entity parentHostGroup =
                 Iterables.getFirst(
-                        Iterables.filter(Entities.ancestors(entity), AmbariHostGroup.class),
+                        Iterables.filter(Entities.ancestorsAndSelf(entity), AmbariHostGroup.class),
                         entity);
 
         String fqdn =
@@ -132,7 +132,7 @@ public class AmbariAgentSshDriver extends JavaSoftwareProcessSshDriver implement
 
     protected AmbariCluster getParentAmbariCluster() {
         Iterable<AmbariCluster> ancestors = Iterables.filter(
-                Entities.ancestors(entity), AmbariCluster.class);
+                Entities.ancestorsAndSelf(entity), AmbariCluster.class);
         return Iterables.getFirst(ancestors, null);
     }
 }

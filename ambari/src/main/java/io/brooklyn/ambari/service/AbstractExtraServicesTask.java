@@ -21,7 +21,6 @@ package io.brooklyn.ambari.service;
 import javax.annotation.Nullable;
 
 import org.apache.brooklyn.api.entity.Entity;
-import org.apache.brooklyn.api.entity.EntityLocal;
 import org.apache.brooklyn.api.mgmt.Task;
 import org.apache.brooklyn.core.entity.Entities;
 import org.apache.brooklyn.core.entity.lifecycle.ServiceStateLogic;
@@ -51,7 +50,7 @@ public abstract class AbstractExtraServicesTask<T extends Entity> implements Fun
             BrooklynTaskTags.WrappedStream stream = BrooklynTaskTags.stream(task, "stderr");
             final String errorMessage = String.format("%s: %s", errorDescription, stream != null ? stream.streamContents.get() : "Unexpected error");
 
-            ServiceStateLogic.ServiceNotUpLogic.updateNotUpIndicator((EntityLocal) node, errorKey, errorMessage);
+            ServiceStateLogic.ServiceNotUpLogic.updateNotUpIndicator(node, errorKey, errorMessage);
             throw new RuntimeException(String.format("[Node %s] %s", node.getDisplayName(), errorMessage));
         }
 

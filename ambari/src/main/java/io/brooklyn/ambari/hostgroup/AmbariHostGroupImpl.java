@@ -57,7 +57,7 @@ public class AmbariHostGroupImpl extends DynamicClusterImpl implements AmbariHos
     @Override
     public List<String> getHostFQDNs() {
         ImmutableList.Builder<String> builder = ImmutableList.builder();
-        for (AmbariAgent agent : Entities.descendants(this, AmbariAgent.class)) {
+        for (AmbariAgent agent : Entities.descendantsAndSelf(this, AmbariAgent.class)) {
             String fqdn = agent.getFqdn();
             if (fqdn != null) {
                 builder.add(fqdn);
@@ -94,7 +94,7 @@ public class AmbariHostGroupImpl extends DynamicClusterImpl implements AmbariHos
                 builder.add((AmbariAgent) entity);
             }
             else {
-                builder.addAll(Entities.descendants(entity, AmbariAgent.class));
+                builder.addAll(Entities.descendantsAndSelf(entity, AmbariAgent.class));
             }
         }
 
@@ -105,13 +105,13 @@ public class AmbariHostGroupImpl extends DynamicClusterImpl implements AmbariHos
         return AmbariAgentImpl.createAgentSpec((AmbariCluster) getParent(), config().getLocalBag());
     }
 
-    private EntitySpec agentWithSiblingsSpec(EntitySpec<?> siblingSpec) {
+    private EntitySpec<?> agentWithSiblingsSpec(EntitySpec<?> siblingSpec) {
         return EntitySpec.create(SameServerEntity.class)
                 .child(ambariAgentSpec())
                 .child(siblingSpec);
     }
 
     private AmbariCluster getAmbariCluster() {
-        return Iterables.getFirst(Iterables.filter(Entities.ancestors(this), AmbariCluster.class), null);
+        return Iterables.getFirst(Iterables.filter(Entities.ancestorsAndSelf(this), AmbariCluster.class), null);
     }
 }

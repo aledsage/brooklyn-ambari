@@ -55,7 +55,7 @@ public class AmbariAgentImpl extends SoftwareProcessImpl implements AmbariAgent 
 
     @Override
     public void setFqdn(String fqdn) {
-        setAttribute(FQDN, fqdn);
+        sensors().set(FQDN, fqdn);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class AmbariAgentImpl extends SoftwareProcessImpl implements AmbariAgent 
 
     @Override
     public void setComponents(List<String> components) {
-        setAttribute(COMPONENTS, components);
+        sensors().set(COMPONENTS, components);
     }
 
     @Nullable

@@ -73,6 +73,7 @@ public class AmbariMain extends Main {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public ToStringHelper string() {
             return super.string()
                     .add("ambari", ambari);

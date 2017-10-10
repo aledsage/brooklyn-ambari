@@ -47,10 +47,10 @@ public class BlueprintTestHelper {
         EntityAsserts.assertAttributeEqualsEventually(app, Attributes.SERVICE_STATE_ACTUAL, Lifecycle.RUNNING);
         Asserts.succeedsEventually(ImmutableMap.of("timeout", Duration.FIVE_MINUTES), new Runnable() {
             public void run() {
-                Iterator i$ = Entities.descendants(app).iterator();
+                Iterator<Entity> i$ = Entities.descendantsAndSelf(app).iterator();
 
                 while (i$.hasNext()) {
-                    Entity entity = (Entity) i$.next();
+                    Entity entity = i$.next();
                     Assert.assertNotEquals(entity.getAttribute(Attributes.SERVICE_STATE_ACTUAL), Lifecycle.ON_FIRE);
                     Assert.assertNotEquals(entity.getAttribute(Attributes.SERVICE_UP), Boolean.valueOf(false));
                     if (entity instanceof SoftwareProcess) {

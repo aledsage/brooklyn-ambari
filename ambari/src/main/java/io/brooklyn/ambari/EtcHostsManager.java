@@ -59,7 +59,7 @@ public class EtcHostsManager {
         Map<String, String> mapping = gatherIpHostnameMapping(machines, addressSensor);
 
         for (Entity e : machines) {
-            Maybe<SshMachineLocation> sshLocation = Machines.findUniqueSshMachineLocation(e.getLocations());
+            Maybe<SshMachineLocation> sshLocation = Machines.findUniqueMachineLocation(e.getLocations(), SshMachineLocation.class);
 
             if (!sshLocation.isPresentAndNonNull()) {
                 LOG.debug("{} has no {}, not setting hostname or updating /etc/hosts", e, SshMachineLocation.class);

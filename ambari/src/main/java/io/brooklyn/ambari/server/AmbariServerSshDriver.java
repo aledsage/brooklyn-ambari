@@ -162,7 +162,7 @@ public class AmbariServerSshDriver extends JavaSoftwareProcessSshDriver implemen
     }
 
     private AmbariCluster getParentAmbariCluster() {
-        Iterable<AmbariCluster> ancestors = Iterables.filter(Entities.ancestors(entity), AmbariCluster.class);
+        Iterable<AmbariCluster> ancestors = Iterables.filter(Entities.ancestorsAndSelf(entity), AmbariCluster.class);
         return Iterables.getFirst(ancestors, null);
     }
 

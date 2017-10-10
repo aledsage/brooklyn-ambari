@@ -62,7 +62,6 @@ public class AmbariRestClientTest {
     }
 
     
-    @SuppressWarnings("deprecation")
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         server = BetterMockWebServer.newInstanceLocalhost();
@@ -75,7 +74,7 @@ public class AmbariRestClientTest {
 
         ambariRestClient = AmbariRestClient.builder()
                 .httpExecutorFactory(location.getExtension(AmbariHttpExecutorHelper.class))
-                .httpExecutorProps(location.getAllConfig(true))
+                .httpExecutorProps(location.config().getBag().getAllConfig())
                 .build();
 
         restAdapter = new RestAdapter.Builder()

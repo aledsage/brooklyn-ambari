@@ -43,7 +43,7 @@ import io.brooklyn.ambari.server.AmbariServer;
 
 public class AmbariLiveTestHelper {
     protected void assertHadoopClusterEventuallyDeployed(Application app) {
-        AmbariServer ambariServer = Entities.descendants(app, AmbariServer.class).iterator().next();
+        AmbariServer ambariServer = Entities.descendantsAndSelf(app, AmbariServer.class).iterator().next();
         EntityAsserts.assertAttributeEventually(
                 ImmutableMap.of("timeout", Duration.minutes(60)),
                 ambariServer,
@@ -59,7 +59,7 @@ public class AmbariLiveTestHelper {
 
     AmbariHostGroup getDataNodeHostGroup(Application app) {
         AmbariHostGroup ambariHostGroup = null;
-        for (AmbariHostGroup hostGroup : Entities.descendants(app, AmbariHostGroup.class)) {
+        for (AmbariHostGroup hostGroup : Entities.descendantsAndSelf(app, AmbariHostGroup.class)) {
             if(hostGroup.getDisplayName().equals("DataNode")) {
                 ambariHostGroup = hostGroup;
                 break;
@@ -89,8 +89,8 @@ public class AmbariLiveTestHelper {
     }
 
     protected void assertAddServiceToClusterEffectorWorks(Application app) {
-        final AmbariServer ambariServer = Entities.descendants(app, AmbariServer.class).iterator().next();
-        final AmbariAgent ambariAgent = Entities.descendants(app, AmbariAgent.class).iterator().next();
+        final AmbariServer ambariServer = Entities.descendantsAndSelf(app, AmbariServer.class).iterator().next();
+        final AmbariAgent ambariAgent = Entities.descendantsAndSelf(app, AmbariAgent.class).iterator().next();
         final Maybe<Effector<?>> effector = EffectorUtils.findEffector(ambariServer.getEntityType().getEffectors(), "addServiceToCluster");
         if (effector.isAbsentOrNull()) {
             throw new IllegalStateException("Cannot get the addServiceToCluster effector");

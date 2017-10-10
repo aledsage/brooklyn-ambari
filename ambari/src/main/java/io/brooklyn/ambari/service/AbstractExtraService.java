@@ -85,7 +85,7 @@ public abstract class AbstractExtraService extends BasicStartableImpl implements
         List<Task<?>> tasks = Lists.newArrayList();
         for (final T node : nodes) {
             Task<?> t = Tasks.builder()
-                    .name(node.toString())
+                    .displayName(node.toString())
                     .description("Invocation on " + node.toString())
                     .body(new FunctionRunningCallable<T>(node, fn))
                     .tag(BrooklynTaskTags.NON_TRANSIENT_TASK_TAG)
@@ -115,7 +115,7 @@ public abstract class AbstractExtraService extends BasicStartableImpl implements
             }
 
             Task<?> t = Tasks.builder()
-                    .name(ambariAgent.toString())
+                    .displayName(ambariAgent.toString())
                     .description("Invocation on " + ambariAgent.toString())
                     .body(new FunctionRunningCallable<AmbariAgent>(ambariAgent, fn))
                     .tag(BrooklynTaskTags.NON_TRANSIENT_TASK_TAG)

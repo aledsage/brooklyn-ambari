@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
-import com.jayway.jsonpath.PathNotFoundException;
 import org.apache.brooklyn.api.entity.Entity;
 import org.apache.brooklyn.api.location.Location;
 import org.apache.brooklyn.api.location.MachineLocation;
@@ -39,6 +38,7 @@ import org.apache.brooklyn.core.entity.Entities;
 import org.apache.brooklyn.core.location.Locations;
 import org.apache.brooklyn.core.location.Machines;
 import org.apache.brooklyn.core.location.access.BrooklynAccessUtils;
+import org.apache.brooklyn.core.location.internal.LocationInternal;
 import org.apache.brooklyn.enricher.stock.Enrichers;
 import org.apache.brooklyn.entity.software.base.SoftwareProcessImpl;
 import org.apache.brooklyn.feed.http.HttpFeed;
@@ -69,6 +69,7 @@ import com.google.common.net.HostAndPort;
 import com.google.common.net.HttpHeaders;
 import com.google.gson.JsonElement;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import io.brooklyn.ambari.AmbariCluster;
 import io.brooklyn.ambari.rest.AmbariApiException;
@@ -128,7 +129,7 @@ public class AmbariServerImpl extends SoftwareProcessImpl implements AmbariServe
         if (location.isPresent() && location.get().hasExtension(HttpExecutorFactory.class)) {
             ambariRestClient = AmbariRestClient.builder()
                     .httpExecutorFactory(location.get().getExtension(HttpExecutorFactory.class))
-                    .httpExecutorProps(location.get().getAllConfig(true))
+                    .httpExecutorProps(((LocationInternal)location.get()).config().getBag().getAllConfig())
                     .build();
         } else {
             ambariRestClient = new AmbariRestClient();
@@ -139,7 +140,7 @@ public class AmbariServerImpl extends SoftwareProcessImpl implements AmbariServe
 
         ambariUri = String.format("http://%s:%d", hp.getHostText(), hp.getPort());
 
-        setAttribute(Attributes.MAIN_URI, URI.create(ambariUri));
+        sensors().set(Attributes.MAIN_URI, URI.create(ambariUri));
 
         sensors().set(AmbariServer.USERNAME, USERNAME);
         usernamePasswordCredentials = new UsernamePasswordCredentials(
@@ -313,8 +314,8 @@ public class AmbariServerImpl extends SoftwareProcessImpl implements AmbariServe
             }
         }
 
-        final Task installationTask = Tasks.builder()
-                .name(String.format("Install %s service", service))
+        final Task<?> installationTask = Tasks.builder()
+                .displayName(String.format("Install %s service", service))
                 .description(String.format("Install %s service on specified hosts through Ambari REST API", service))
                 .body(new Runnable() {
                     @Override
@@ -336,8 +337,8 @@ public class AmbariServerImpl extends SoftwareProcessImpl implements AmbariServe
                                 .run();
                     }
                 }).build();
-        final Task startTask = Tasks.builder()
-                .name(String.format("Start %s service", service))
+        final Task<?> startTask = Tasks.builder()
+                .displayName(String.format("Start %s service", service))
                 .description(String.format("Start %s service on specified hosts through Ambari REST API", service))
                 .body(new Runnable() {
                     @Override
@@ -551,7 +552,7 @@ public class AmbariServerImpl extends SoftwareProcessImpl implements AmbariServe
 
     @Override
     public boolean agentOnServer() {
-        Iterable<AmbariCluster> ambariClusters = Iterables.filter(Entities.ancestors(this), AmbariCluster.class);
+        Iterable<AmbariCluster> ambariClusters = Iterables.filter(Entities.ancestorsAndSelf(this), AmbariCluster.class);
         for (Entity parent : ambariClusters) {
             return !parent.getConfig(AmbariCluster.SERVER_COMPONENTS).isEmpty();
         }
@@ -580,7 +581,7 @@ public class AmbariServerImpl extends SoftwareProcessImpl implements AmbariServe
 
     @Override
     public void setFqdn(String fqdn) {
-        setAttribute(FQDN, fqdn);
+        sensors().set(FQDN, fqdn);
     }
 
     public void setRestAdapter(RestAdapter restAdapter) {
