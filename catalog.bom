@@ -1,9 +1,9 @@
 brooklyn.catalog:
-  version: 0.8.0-SNAPSHOT  # BROOKLYN_AMBARI_VERSION
+  version: 0.9.0-SNAPSHOT  # BROOKLYN_AMBARI_VERSION
 
   libraries:
   # BROOKLYN_AMBARI_VERSION_BELOW
-  - "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.brooklyn.ambari&a=brooklyn-ambari&v=0.8.0-SNAPSHOT&e=jar"
+  - "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=io.brooklyn.ambari&a=brooklyn-ambari&v=0.9.0-SNAPSHOT&e=jar"
   publish:
     description: |
       Entities for running the Apache Ambari project in Apache Brooklyn.
